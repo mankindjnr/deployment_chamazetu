@@ -1,0 +1,33 @@
+version: '3.9'
+
+services:
+  message_broker:
+    image: ghcr.io/mankindjnr/redis:latest
+    ports:
+      - "6380:6379"
+
+  chamazetu_backend:
+    image: ghcr.io/mankindjnr/chamazetu_backend:latest
+    command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --reload
+    ports:
+      - "9400:9400"
+    depends_on:
+      - message_broker
+    environment:
+      - DATABASE_URL=postgres://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@{SUPABASE_DB_HOST}:5432/${SUPABASE_DB_NAME}
+
+  celery_worker:
+    image: ghcr.io/mankindjnr/celery_worker:latest
+    command: celery -A frontend_chamazetu.celery worker --pool=solo -l INFO
+    depends_on:
+      - message_broker
+    environment:
+      - DATABASE_URL=postgres://${SUPA_DB_USER}:${SUPA_DB_PASSWORD}@${SUPA_DB_HOST}:5432/${SUPA_DB_NAME}
+
+  celery_beat_scheduler:
+    image: ghcr.io/mankindjnr/celery_beat_scheduler:latest
+    command: celery -A frontend_chamazetu.celery beat -l INFO
+    depends_on:
+      - message_broker
+    environment:
+      - DATABASE_URL=postgres://${SUPA_DB_USER}:${SUPA_DB_PASSWORD}@${SUPA_DB_HOST}:5432/${SUPA_DB_NAME}
