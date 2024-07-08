@@ -1,12 +1,13 @@
 #!/bin/bash
-docker-compose pull chamazetu_frontend
-docker-compose up -d --no-deps --build chamazetu_frontend
 
-docker-compose pull chamazetu_backend
-docker-compose up -d --no-deps --build chamazetu_backend
+# pull the latest images
+docker-compose pull
 
-docker-compose pull celery_worker
-docker-compose up -d --no-deps --build celery_worker
+# update each service without stopping other services
+docker-compose up -d --no-deps  chamazetu_frontend
+docker-compose up -d --no-deps  chamazetu_backend
+docker-compose up -d --no-deps  celery_worker
+docker-compose up -d --no-deps  celery_beat_scheduler
 
-docker-compose pull celery_beat_scheduler
-docker-compose up -d --no-deps --build celery_beat_scheduler
+# remove unused images to free up space
+docker image prune -f

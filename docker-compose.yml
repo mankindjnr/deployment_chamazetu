@@ -58,11 +58,3 @@ services:
     depends_on:
       - chamazetu_frontend
       - chamazetu_backend
-
-  watchtower:
-    image: containrrr/watchtower:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: --schedule "0 */4 * * *"
-    environment:
-      - WATCHTOWER_CLEANUP=true
