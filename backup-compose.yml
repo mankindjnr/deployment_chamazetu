@@ -5,17 +5,15 @@ services:
     image: redis:latest
     ports:
       - "6380:6379"
-    networks:
-      - chamazetu_network
 
-  pgbouncer:
+  chamazetu_pgbouncer:
     image: edoburu/pgbouncer:latest
     restart: always
     environment:
       - DB_USER=${SUPABASE_DB_USER}
       - DB_PASSWORD=${SUPABASE_DB_PASSWORD}
       - DB_HOST=${SUPABASE_DB_HOST}
-      - AUTH_TYPE=scram-sha-256
+      - AUTH_TYPE=md5
       - POOL_MODE=transaction
       - LISTEN_PORT=6432
     ports:
@@ -23,8 +21,6 @@ services:
     volumes:
       - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
       - ./userlist.txt:/etc/pgbouncer/userlist.txt
-    networks:
-      - chamazetu_network
 
   chamazetu_frontend:
     image: ghcr.io/mankindjnr/chamazetu_frontend:latest
@@ -34,8 +30,6 @@ services:
       - DATABASE_URL=postgres://${SUPA_DB_USER}:${SUPA_DB_PASSWORD}@${SUPA_DB_HOST}:5432/${SUPA_DB_NAME}
     depends_on:
       - message_broker
-    networks:
-      - chamazetu_network
     deploy:
       replicas: 2
 
@@ -44,11 +38,9 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --reload
     environment:
       - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@pgbouncer:6432/${SUPABASE_DB_NAME}
+      - DATABASE_URL=postgres://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@chamazetu_pgbouncer:6432/${SUPABASE_DB_NAME}
     depends_on:
-      - pgbouncer
-    networks:
-      - chamazetu_network
+      - chamazetu_pgbouncer
     deploy:
       replicas: 4
 
@@ -60,8 +52,6 @@ services:
       - DATABASE_URL=postgres://${SUPA_DB_USER}:${SUPA_DB_PASSWORD}@${SUPA_DB_HOST}:5432/${SUPA_DB_NAME}
     depends_on:
       - message_broker
-    networks:
-      - chamazetu_network
     deploy:
       replicas: 3
 
@@ -73,8 +63,6 @@ services:
       - DATABASE_URL=postgres://${SUPA_DB_USER}:${SUPA_DB_PASSWORD}@${SUPA_DB_HOST}:5432/${SUPA_DB_NAME}
     depends_on:
       - message_broker
-    networks:
-      - chamazetu_network
 
   nginx:
     image: nginx:latest
@@ -88,9 +76,3 @@ services:
     depends_on:
       - chamazetu_frontend
       - chamazetu_backend
-    networks:
-      - chamazetu_network
-
-networks:
-  chamazetu_network:
-    driver: bridge
