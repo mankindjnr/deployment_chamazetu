@@ -21,7 +21,7 @@ services:
     environment:
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_HOST=chamazetu_prod_db
+      - DB_HOST=chamazetu_backend
       - AUTH_TYPE=scram-sha-256
       - POOL_MODE=transaction
       - LISTEN_PORT=6432
