@@ -58,7 +58,6 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --reload
     environment:
       - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@pgbouncer:6432/${SUPABASE_DB_NAME}
     depends_on:
       - pgbouncer
     networks:
@@ -71,7 +70,6 @@ services:
     command: celery -A frontend_chamazetu.celery worker -l INFO
     environment:
       - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${SUPA_DB_USER}:${SUPA_DB_PASSWORD}@${SUPA_DB_HOST}:5432/${SUPA_DB_NAME}
       - C_FORCE_ROOT=true
     depends_on:
       - message_broker
@@ -85,7 +83,6 @@ services:
     command: celery -A frontend_chamazetu.celery beat -l INFO
     environment:
       - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${SUPA_DB_USER}:${SUPA_DB_PASSWORD}@${SUPA_DB_HOST}:5432/${SUPA_DB_NAME}
     depends_on:
       - message_broker
     networks:
