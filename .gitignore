@@ -1,3 +1,5 @@
 .env
 userlist.txt
 pgbouncer.ini
+./pgbouncer.ini
+./userlist.txt

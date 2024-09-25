@@ -26,9 +26,9 @@ services:
     image: edoburu/pgbouncer:latest
     restart: always
     environment:
-      - DB_USER=${SUPABASE_DB_USER}
-      - DB_PASSWORD=${SUPABASE_DB_PASSWORD}
-      - DB_HOST=${SUPABASE_DB_HOST}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=chamazetu_prod_db
       - AUTH_TYPE=scram-sha-256
       - POOL_MODE=transaction
       - LISTEN_PORT=6432
@@ -55,7 +55,7 @@ services:
 
   chamazetu_backend:
     image: ghcr.io/mankindjnr/chamazetu_backend:latest
-    command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --workers 4
     environment:
       - TZ=Africa/Nairobi
     depends_on:
