@@ -6,13 +6,29 @@ services:
     networks:
       - chamazetu_network
 
+  chamazetu_prod_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
+      - POSTGRES_INITDB_ARGS=--auth=scram-sha-256
+    volumes:
+      - chamazetu_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - chamazetu_network
+
   pgbouncer:
     image: edoburu/pgbouncer:latest
     restart: always
     environment:
-      - DB_USER=${SUPABASE_DB_USER}
-      - DB_PASSWORD=${SUPABASE_DB_PASSWORD}
-      - DB_HOST=${SUPABASE_DB_HOST}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=chamazetu_prod_db
       - AUTH_TYPE=scram-sha-256
       - POOL_MODE=transaction
       - LISTEN_PORT=6432
@@ -26,10 +42,10 @@ services:
 
   chamazetu_frontend:
     image: ghcr.io/mankindjnr/chamazetu_frontend:latest
-    command: gunicorn --bind 0.0.0.0:8000 frontend_chamazetu.wsgi:application
+    command: >
+      sh -c "python manage.py collectstatic --no-input && gunicorn frontend_chamazetu.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     environment:
       - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${SUPA_DB_USER}:${SUPA_DB_PASSWORD}@${SUPA_DB_HOST}:5432/${SUPA_DB_NAME}
     depends_on:
       - message_broker
     networks:
@@ -39,10 +55,9 @@ services:
 
   chamazetu_backend:
     image: ghcr.io/mankindjnr/chamazetu_backend:latest
-    command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --workers 4
     environment:
       - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@pgbouncer:6432/${SUPABASE_DB_NAME}
     depends_on:
       - pgbouncer
     networks:
@@ -55,7 +70,6 @@ services:
     command: celery -A frontend_chamazetu.celery worker -l INFO
     environment:
       - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${SUPA_DB_USER}:${SUPA_DB_PASSWORD}@${SUPA_DB_HOST}:5432/${SUPA_DB_NAME}
       - C_FORCE_ROOT=true
     depends_on:
       - message_broker
@@ -69,7 +83,6 @@ services:
     command: celery -A frontend_chamazetu.celery beat -l INFO
     environment:
       - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${SUPA_DB_USER}:${SUPA_DB_PASSWORD}@${SUPA_DB_HOST}:5432/${SUPA_DB_NAME}
     depends_on:
       - message_broker
     networks:
@@ -89,6 +102,10 @@ services:
       - chamazetu_backend
     networks:
       - chamazetu_network
+
+volumes:
+  chamazetu_data:
+
 
 networks:
   chamazetu_network:
