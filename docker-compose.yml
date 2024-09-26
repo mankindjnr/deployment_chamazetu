@@ -59,7 +59,6 @@ services:
     depends_on:
       - chamazetu_database
       - message_broker
-      - pgbouncer
     networks:
       - chamazetu_network
     deploy:
