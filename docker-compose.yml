@@ -4,7 +4,7 @@ services:
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD={POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
       - POSTGRES_INITDB_ARGS=--auth=scram-sha-256
@@ -12,6 +12,24 @@ services:
       - chamazetu_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - chamazetu_network
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    restart: always
+    environment:
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=chamazetu_database
+      - AUTH_TYPE=scram-sha-256
+      - POOL_MODE=transaction
+      - LISTEN_PORT=6432
+    ports:
+      - "6432:6432"
+    volumes:
+      - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt
     networks:
       - chamazetu_network
 
@@ -55,7 +73,7 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --workers 4
     environment:
       - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@chamazetu_database:5432/${DB_NAME}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@pgbouncer:6432/${DB_NAME}
     depends_on:
       - chamazetu_database
       - message_broker
