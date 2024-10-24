@@ -128,7 +128,7 @@ services:
 
   celery_backend_worker:
     image: ghcr.io/mankindjnr/celery_backend_worker:latest
-    command: celery -A backend_chamazetu.celery worker -l INFO
+    command: celery -A app.celery worker --pool=solo -l INFO
     environment:
       - TZ=Africa/Nairobi
       - DATABASE_URL=postgres://${BACKEND_CELERY_POSTGRES_USER}:${BACKEND_CELERY_POSTGRES_PASSWORD}@chamazetu_backend_celery_database:5432/${BACKEND_CELERY_POSTGRES_DB}
