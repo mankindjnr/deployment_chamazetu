@@ -37,6 +37,7 @@ services:
 
   message_broker:
     image: redis:latest
+    restart: always
     ports:
       - "6380:6379"
     volumes:
@@ -46,6 +47,7 @@ services:
 
   backend_message_broker:
     image: redis:latest
+    restart: always
     ports:
       - "6381:6379"
     volumes:
@@ -85,6 +87,7 @@ services:
 
   chamazetu_frontend:
     image: ghcr.io/mankindjnr/chamazetu_frontend:latest
+    restart: always
     command: >
       sh -c "python manage.py collectstatic --no-input && gunicorn frontend_chamazetu.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     environment:
@@ -99,6 +102,7 @@ services:
 
   chamazetu_backend:
     image: ghcr.io/mankindjnr/chamazetu_backend:latest
+    restart: always
     command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --workers 4
     environment:
       - TZ=Africa/Nairobi
@@ -114,6 +118,7 @@ services:
 
   celery_worker:
     image: ghcr.io/mankindjnr/celery_worker:latest
+    restart: always
     command: celery -A frontend_chamazetu.celery worker -l INFO
     environment:
       - TZ=Africa/Nairobi
@@ -128,6 +133,7 @@ services:
 
   celery_backend_worker:
     image: ghcr.io/mankindjnr/celery_backend_worker:latest
+    restart: always
     command: celery -A app.celery worker --pool=solo -l INFO
     environment:
       - TZ=Africa/Nairobi
@@ -143,6 +149,7 @@ services:
 
   celery_beat_scheduler:
     image: ghcr.io/mankindjnr/celery_beat_scheduler:latest
+    restart: always
     command: celery -A frontend_chamazetu.celery beat -l INFO
     environment:
       - DATABASE_URL=postgres://${FRONTEND_POSTGRES_USER}:${FRONTEND_POSTGRES_PASSWORD}@chamazetu_frontend_database:5432/${FRONTEND_POSTGRES_DB}
@@ -154,6 +161,7 @@ services:
 
   nginx:
     image: nginx:latest
+    restart: always
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./certbot/conf:/etc/letsencrypt
