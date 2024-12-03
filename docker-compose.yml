@@ -1,6 +1,6 @@
 services:
   chamazetu_database:
-    image: postgres:16
+    image: postgres:17
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -58,7 +58,7 @@ services:
       - chamazetu_network
 
   chamazetu_frontend_database:
-    image: postgres:16
+    image: postgres:17
     restart: always
     environment:
       POSTGRES_USER: ${FRONTEND_POSTGRES_USER}
@@ -72,7 +72,7 @@ services:
       - chamazetu_network
 
   chamazetu_backend_celery_database:
-    image: postgres:16
+    image: postgres:17
     restart: always
     environment:
       POSTGRES_USER: ${BACKEND_CELERY_POSTGRES_USER}
