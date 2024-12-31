@@ -95,7 +95,7 @@ services:
     image: ghcr.io/mankindjnr/chamazetu_frontend:latest
     restart: always
     command: >
-      sh -c "python manage.py migrate && gunicorn frontend_chamazetu.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+      sh -c "python manage.py migrate && python manage.py collectstatic --no-input && gunicorn frontend_chamazetu.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     environment:
       TZ: Africa/Nairobi
     depends_on:
@@ -182,7 +182,6 @@ services:
       - "443:443"
     depends_on:
       - chamazetu_frontend
-      - chamazetu_backend
     networks:
       - chamazetu_network
 
