@@ -3,11 +3,11 @@ services:
     image: postgres:17
     restart: always
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_HOST_AUTH_METHOD=scram-sha-256
-      - POSTGRES_INITDB_ARGS=--auth=scram-sha-256
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
     volumes:
       - chamazetu_data:/var/lib/postgresql/data
     ports:
@@ -19,12 +19,12 @@ services:
     image: edoburu/pgbouncer:latest
     restart: always
     environment:
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_HOST=chamazetu_database
-      - AUTH_TYPE=scram-sha-256
-      - POOL_MODE=transaction
-      - LISTEN_PORT=6432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: chamazetu_database
+      AUTH_TYPE: scram-sha-256
+      POOL_MODE: transaction
+      LISTEN_PORT: 6432
     ports:
       - "6432:6432"
     depends_on:
@@ -53,7 +53,7 @@ services:
     volumes:
       - redis_data:/data
     environment:
-      - TZ=Africa/Nairobi
+      TZ: Africa/Nairobi
     networks:
       - chamazetu_network
 
@@ -89,9 +89,9 @@ services:
     image: ghcr.io/mankindjnr/chamazetu_frontend:latest
     restart: always
     command: >
-      sh -c "python manage.py migrate && python manage.py collectstatic --no-input && gunicorn frontend_chamazetu.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+      sh -c "python manage.py migrate && gunicorn frontend_chamazetu.wsgi:application --bind 0.0.0.0:8000 --workers 3"
     environment:
-      - TZ=Africa/Nairobi
+      TZ: Africa/Nairobi
     depends_on:
       - chamazetu_frontend_database
       - message_broker
@@ -105,8 +105,8 @@ services:
     restart: always
     command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --workers 4
     environment:
-      - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@pgbouncer:6432/${DB_NAME}
+      TZ: Africa/Nairobi
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@pgbouncer:6432/${DB_NAME}
     depends_on:
       - chamazetu_database
       - message_broker
@@ -121,9 +121,9 @@ services:
     restart: always
     command: celery -A frontend_chamazetu.celery worker -l INFO
     environment:
-      - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${FRONTEND_POSTGRES_USER}:${FRONTEND_POSTGRES_PASSWORD}@chamazetu_frontend_database:5432/${FRONTEND_POSTGRES_DB}
-      - C_FORCE_ROOT=true
+      TZ: Africa/Nairobi
+      DATABASE_URL: postgres://${FRONTEND_POSTGRES_USER}:${FRONTEND_POSTGRES_PASSWORD}@chamazetu_frontend_database:5432/${FRONTEND_POSTGRES_DB}
+      C_FORCE_ROOT: true
     depends_on:
       - message_broker
     networks:
@@ -136,9 +136,9 @@ services:
     restart: always
     command: celery -A app.celery worker --pool=solo -l INFO
     environment:
-      - TZ=Africa/Nairobi
-      - DATABASE_URL=postgres://${BACKEND_CELERY_POSTGRES_USER}:${BACKEND_CELERY_POSTGRES_PASSWORD}@chamazetu_backend_celery_database:5432/${BACKEND_CELERY_POSTGRES_DB}
-      - C_FORCE_ROOT=true
+      TZ: Africa/Nairobi
+      DATABASE_URL: postgres://${BACKEND_CELERY_POSTGRES_USER}:${BACKEND_CELERY_POSTGRES_PASSWORD}@chamazetu_backend_celery_database:5432/${BACKEND_CELERY_POSTGRES_DB}
+      C_FORCE_ROOT: true
     depends_on:
       - chamazetu_backend_celery_database
       - backend_message_broker
@@ -152,8 +152,8 @@ services:
     restart: always
     command: celery -A frontend_chamazetu.celery beat -l INFO
     environment:
-      - DATABASE_URL=postgres://${FRONTEND_POSTGRES_USER}:${FRONTEND_POSTGRES_PASSWORD}@chamazetu_frontend_database:5432/${FRONTEND_POSTGRES_DB}
-      - TZ=Africa/Nairobi
+      DATABASE_URL: postgres://${FRONTEND_POSTGRES_USER}:${FRONTEND_POSTGRES_PASSWORD}@chamazetu_frontend_database:5432/${FRONTEND_POSTGRES_DB}
+      TZ: Africa/Nairobi
     depends_on:
       - message_broker
     networks:
