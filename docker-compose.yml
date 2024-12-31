@@ -93,7 +93,6 @@ services:
 
   chamazetu_frontend:
     image: ghcr.io/mankindjnr/chamazetu_frontend:latest
-    container_name: chamazetu_frontend
     restart: always
     command: >
       sh -c "python manage.py migrate && gunicorn frontend_chamazetu.wsgi:application --bind 0.0.0.0:8000 --workers 3"
@@ -111,7 +110,6 @@ services:
 
   chamazetu_backend:
     image: ghcr.io/mankindjnr/chamazetu_backend:latest
-    container_name: chamazetu_backend
     restart: always
     command: uvicorn app.main:app --host 0.0.0.0 --port 9400 --workers 4
     environment:
@@ -128,7 +126,6 @@ services:
 
   celery_worker:
     image: ghcr.io/mankindjnr/celery_worker:latest
-    container_name: celery_worker
     restart: always
     command: celery -A frontend_chamazetu.celery worker -l INFO
     environment:
@@ -144,7 +141,6 @@ services:
 
   celery_backend_worker:
     image: ghcr.io/mankindjnr/celery_backend_worker:latest
-    container_name: celery_backend_worker
     restart: always
     command: celery -A app.celery worker --pool=solo -l INFO
     environment:
